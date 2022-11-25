@@ -1,139 +1,131 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import React from 'react';
-
-
+import EventCards from "./eventCards";
 
 class EventCataloguePage extends React.Component{
-
-
   constructor(){
     super()
-    this.limit = React.createRef()
     this.state = {
-        tableJSX : <></>,
-        paginationJSX : <></>,
-        pageSelected : 0,
-        limitEntered : 5
+      createdEventsJsx : <></> ,
+      count : 0,
+      limit : 4
+      
     }
-    this.count = 0
+    this.initialLimit = this.state.limit
+    this.loadMoreJSX = <></>
+  }
+
+  handleShowMoreEvents = () =>{
+    this.setState({limit : this.state.limit + this.initialLimit , count:0})
+  }
+  handleShowLessEvents = () =>{
+    this.setState({limit :this.initialLimit , count:0})
+  }
+
+  createCardsJSX(data){
+    let table = []
+    let tempJSX = []
+    let cardsPerRow = 4
+    
+    
+        
+        for (let r = 0; r<parseInt(data.length/cardsPerRow) ; r++){
+            let rows = []
+            for(let c = r*cardsPerRow ; c< (r+1)*cardsPerRow ; c++)
+                rows.push(<EventCards data={data[c]} parentPage="eventCatalogue"/>)
+            table.push(rows);
+        }
+
+        let rows = []
+        let c = data.length - data.length%cardsPerRow
+        for( ; c<data.length ; c++){
+            rows.push(<EventCards data={data[c]} parentPage="eventCatalogue"/>)
+        }
+        table.push(rows)
+        
+
+        for(let i = 0; i<table.length ; i++){
+            tempJSX.push(
+                <div className="container-fluid d-flex">
+                    {table[i]}
+                </div>
+            )
+        }
+
+
+
+
+
+        this.setState({createdEventsJsx : 
+                <div className="container-fluid">
+                      {tempJSX}
+                </div>
+        })
     
   }
 
-  
 
-  fetchEvents(){
-    if(this.count != 0)
-      return
-    
+  eventsCreated(){
+        if(this.state.count != 0)
+            return
 
-    let rowsPage = []
-    fetch(`http://localhost:8000/api/v3/app/events/`)
-    .then((data)=>{
-  
-          data.json().then((results)=>{
-  
-                  
-                  let r = 2;
-                  for ( ;r<results.data.length/this.state.limitEntered ; r++){
-                        rowsPage.push(<li className="page-item"><a class="page-link" onClick={this.pageChanged}>{r}</a></li>)
-                  }
-  
-                  if(! Number.isInteger(results.data.length/this.state.limitEntered))
-                    rowsPage.push(<li className="page-item"><a class="page-link" onClick={this.pageChanged}>{r}</a></li>)
-
-          })
-  
-    }).catch((e)=>alert("Could not fetch"))
-  
-
-    fetch(`http://localhost:8000/api/v3/app/events/?` + new URLSearchParams({
-      limit: this.state.limitEntered,
-      page: this.state.pageSelected,
-    }),{
+            fetch(`http://localhost:8000/api/v3/app/events/`)
+            .then((data)=>{
           
-      method: 'get',
-          
-    }).then((data)=>{
+                  data.json().then((results)=>{
 
-        data.json().then((results)=>{
-            let index = 1;
-            let rows = []
-            results.data.forEach(element => {
-                rows.push(
-                    <tr className="row">
-                      <td className="col">{index++}</td>
-                      <td className="col">{element.ename}</td>
-                    </tr>
-                )
-                
-            });
-            this.count = 1
-            this.setState({
-              tableJSX:
-                    <table className="table table-striped">
-                      
-                      <tbody>
-                        <tr className="row bg-info">
-                            <td className="col">#</td>
-                            <td className="col">Event Name</td>
-                        </tr>
-                        {rows}
-                      </tbody>
-                        
-                      </table>,
-              paginationJSX : 
-              <div>
-                <ul class="pagination">
-                {rowsPage}
-                </ul>
-              </div>
+                    if(results.data.length == 0){
+                        this.loadMoreJSX = <></>
+                    }else{
+                        if(results.data.length >this.state.limit){
+                          this.loadMoreJSX = <button className="btn  btn-outline-primary btn-lg w-100" onClick={this.handleShowMoreEvents}>Show More</button>
+                        }else{
+                          this.loadMoreJSX = <button className="btn  btn-outline-primary btn-lg w-100" onClick={this.handleShowLessEvents}>Show Less</button>
+                        }
+                    }
             })
-            
 
+                     
+          
+            }).catch((e)=>alert("Could not fetch"))
 
-
+        fetch(`http://localhost:8000/api/v3/app/events/?limit=${this.state.limit}&&page=0`, {
+            method: 'get',
+            headers:{
+                "accept" : "*/*"
+            }
+        }).then((res)=>{
+                res.json().then((results)=>{
+                    if(results.success!=true){
+                        alert("Try again. Some issues has occured. It has been reported")
+                    }else{
+                        
+                        if(results.data.length>0){
+                            this.createCardsJSX(results.data);
+                            this.setState({count:1})
+                        }
+                    }
+                })
+                
         })
 
-    }).catch((e)=>alert("Could not fetch"))
-
   }
 
-  limitChanged = () => {
 
-    let limit = this.limit.current.value
-    if(limit == "")
-      return
-    else if(limit == 0){
-      limit = 5
-    }
-    this.count = 0
-    this.setState({limitEntered : limit})
-    
-
-  }
-
-  pageChanged = (e) => {
-    this.count = 0
-    this.setState({pageSelected : e.target.text-1})
-    
-
-  }
-
+  
 
   render(){
-    this.fetchEvents();
+        
+    this.eventsCreated()
     return(
-      <div className="container">
-              {this.state.tableJSX}
-              <div className="container d-flex">
-                  <input className="form-control fs-6" ref={this.limit} id="Limit" size="5" placeholder="Limit" defaultValue="5" onChange={this.limitChanged}/>
-                  {this.state.paginationJSX}
-              </div>
-      </div>
-    )
+            <div className="contaier-fluid"> 
+              {this.state.createdEventsJsx}
+              <div className="container-fluid mb-5">{this.loadMoreJSX}</div>
+            </div>
+  
+  )
   }
-    
-}
 
+}
 
 export  default EventCataloguePage;

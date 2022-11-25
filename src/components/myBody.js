@@ -19,7 +19,7 @@ function MyBody(){
     const EventCataloguePageJSX = <EventCataloguePage pageUpdater={setPage}/>;
 
     
-    const [pageDisplayed , setPageDisplayed] = useState(EventCataloguePageJSX);
+    const [pageDisplayed , setPageDisplayed] = useState(userEventPageJSX);
     
     const closeSideBar = () => setShow(false);
     const showSideBar = () => setShow(true);

@@ -1,7 +1,6 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import React from 'react';
-import img1 from "../images/a.png";
-import img2 from "../images/b.png";
+
 
 class EventCards extends React.Component{
     constructor(props){
@@ -9,19 +8,24 @@ class EventCards extends React.Component{
         this.props = props
         this.state = {
             "count" : 0,
-            "img": ""
+            "img": "",
         }
-    }
-
-    updateMe = () =>{
-        this.props.updateEvent(this.props.data);
+        if(props.parentPage == "userEvents"){
+            this.editButtons = <div className="col mb-4 ms-3">
+                                    <span className="btn btn-sm btn-primary mx-1" onClick={()=>this.props.showModal(this.props.data)}>update Event</span>
+                                    <span  className="btn btn-sm btn-primary" onClick={this.deleteMe}>Delete Event</span>
+                                </div>
+        }
+        else{
+            this.editButtons = <></>
+        }
     }
 
     deleteMe= ()=>{
         fetch(`http://localhost:8000/api/v3/app/events/${this.props.data._id}`, {
             method: 'delete',
         }).then((res)=>{
-                this.props.setUpdatedCard();
+                this.props.renderDeleted();
         })
     }
 
@@ -37,7 +41,14 @@ class EventCards extends React.Component{
         })
         
     }
-    
+
+    showButtons(){
+        return <div className="col mb-4 ms-3">
+                    <span className="btn btn-sm btn-primary mx-1" onClick={()=>this.props.showModal(this.props.data)}>update Event</span>
+                    <span  className="btn btn-sm btn-primary" onClick={this.deleteMe}>Delete Event</span>
+                </div>  
+    }
+
     render(){
 
 
@@ -49,10 +60,7 @@ class EventCards extends React.Component{
                     <h5 className="card-title">{this.props.data.ename}</h5>
                     <p className="card-text">{this.props.data.description}</p>
                 </div>
-                <div className="col mb-4 ms-3">
-                        <span  className="btn btn-sm btn-primary mx-1" onClick={this.updateMe}>update Event</span>
-                        <span  className="btn btn-sm btn-primary" onClick={this.deleteMe}>Delete Event</span>
-                </div>
+                {this.editButtons} 
             </div>
             </>
         )
@@ -70,10 +78,8 @@ class EventCards extends React.Component{
                     <h5 className="card-title">{this.props.data.ename}</h5>
                     <p className="card-text">{this.props.data.description}</p>
                 </div>
-                <div className="col mb-4 ms-3">
-                    <span  className="btn btn-sm btn-primary mx-1" onClick={this.updateMe}>update Event</span>
-                    <span  className="btn btn-sm btn-primary" onClick={this.deleteMe}>Delete Event</span>
-                </div>
+                {this.editButtons} 
+                
             </div>
             </>
         )

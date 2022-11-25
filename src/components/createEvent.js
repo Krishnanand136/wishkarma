@@ -49,7 +49,7 @@ function CreateEventPage(props){
     async function submitEvent(){
          if(!validated())
             return;
-        
+        console.log(refEventName.current);
         let eventName = refEventName.current.value.trim()
         let eventTagline = reftagline.current.value || "Awesome event"
         let eventDescription = refdesc.current.value.trim()
@@ -67,8 +67,7 @@ function CreateEventPage(props){
         fd.append("description",eventDescription)
         fd.append("moderator",eventModerator)
         fd.append("category",eventCategory)
-        //when Event is updated input file is removed
-        if(refEventFiles.current != null){
+       
             let eventFiles = refEventFiles.current.files.length ? refEventFiles.current.files[0] : null
             fd.append("eventImage",eventFiles)
             let res = await fetch("http://localhost:8000/api/v3/app/events/", {
@@ -91,104 +90,22 @@ function CreateEventPage(props){
                 refEventFiles.current.value = null
 
             }
-        }else{
-            let res = await fetch(`http://localhost:8000/api/v3/app/events/${props.data._id}`, {
-                method: 'put',
-                body: fd
-            })
-
-            let data = await res.json()
-            if(data.message == "some error occured"){
-                alert("Some eroor occured pls try again later")
-            }else{
-                alert("updated one record")
-            }
-            props.pageUpdater("UserEvents1");
-            
-            
-        }
-
         
-        
+       
 
-        
-
-        
-
-        
+ 
     }
 
-    const offset = new Date().getTimezoneOffset() * 1000 * 60
+    /*const offset = new Date().getTimezoneOffset() * 1000 * 60
 
     const getLocalDate = value => {
         const offsetDate = new Date(value).valueOf() - offset
         const date = new Date(offsetDate).toISOString()
         return date.substring(0, 16)
-    }
+    }*/
 
     
-    if (props.data != undefined){
-        return(
-            <div className="container-fluid h-100">
-                <h1 align="center" className="w-100 align-center">{"Update Event - " + props.data.ename}</h1>
-                <div className="container">
-                    <div className="row mb-3">
-                        <div className="col-md-3">
-                            <label htmlFor="EventName" className="form-label fs-4">Event Name</label>
-                        </div>
-                        <div className="col">
-                            <input className="form-control fs-5" ref={refEventName} id="EventName" defaultValue={props.data.ename} ></input>
-                        </div>
-                    </div>
-                    <div className="row mb-3">
-                        <div className="col-md-3">
-                            <label htmlFor="tagline" className="form-label fs-4">Event Tagline</label>
-                        </div>
-                        <div className="col">
-                            <input className="form-control fs-5" ref={reftagline} id="tagline" defaultValue={props.data.tagline} ></input>
-                        </div>
-                    </div>
-                    <div className="row mb-3">
-                        <div className="col-md-3">
-                            <label htmlFor="desc" className="form-label fs-4">Event Description</label>
-                        </div>
-                        <div className="col">
-                            <textarea  className="form-control fs-5" ref={refdesc} id="desc" rows="3" defaultValue={props.data.description} ></textarea >
-                        </div>
-                    </div>
-                    <div className="row mb-3">
-                        <div className="col-md-3">
-                            <label htmlFor="sched" className="form-label fs-4">Event Schedule</label>
-                        </div>
-                        <div className="col">
-                            <input type="datetime-local"  className="form-control fs-5" ref={refsched} id="sched" defaultValue={getLocalDate(props.data.schedule)} ></input >
-                        </div>
-                    </div>
-                    <div className="row mb-3">
-                        <div className="col-md-3">
-                            <label htmlFor="EventMod" className="form-label fs-4">Event Moderator</label>
-                        </div>
-                        <div className="col">
-                            <input className="form-control fs-5" ref={refEventMod} id="EventMod" defaultValue={props.data.moderator} ></input>
-                        </div>
-                    </div>
-                    <div className="row mb-3">
-                        <div className="col-md-3">
-                            <label htmlFor="EventCat" className="form-label fs-4">Event Category</label>
-                        </div>
-                        <div className="col">
-                            <input className="form-control fs-5" ref={refEventCat} id="EventCat" defaultValue={props.data.category} ></input>
-                        </div>
-                    </div>
-                    <div className="row mb-3">
-                        <div className="col">
-                            <input className="form-control btn-primary" type="Button" value="Submit" readOnly  id="submit" onClick={submitEvent}></input>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        )
-    }else{
+  
         return(
             <div className="container-fluid h-100">
                 <h1 align="center" className="w-100 align-center">Create Your Event Here</h1>
@@ -255,7 +172,7 @@ function CreateEventPage(props){
                 </div>
             </div>
         )
-    }
+    
     
 }
 
